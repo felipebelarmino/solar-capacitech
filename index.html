@@ -500,6 +500,125 @@
           transform var(--transition-default);
       }
 
+      /* Estilos para o painel de arquivos existentes no bucket */
+      .objects {
+        margin-top: clamp(28px, 5vw, 40px);
+        padding-top: clamp(24px, 5vw, 32px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: grid;
+        gap: 18px;
+      }
+
+      .objects__title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .objects__empty {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-secondary);
+      }
+
+      .objects__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .objects__item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: var(--radius-sm);
+        background: rgba(15, 23, 42, 0.6);
+      }
+
+      .objects__name {
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text-primary);
+        word-break: break-all;
+      }
+
+      /* Ícones de arquivo para tipos específicos */
+      .file-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #ffffff;
+        flex-shrink: 0;
+      }
+      .file-icon--pdf {
+        background: #ef4444;
+      }
+      .file-icon--csv,
+      .file-icon--xls,
+      .file-icon--xlsx {
+        background: #22c55e;
+      }
+      .file-icon--doc,
+      .file-icon--docx {
+        background: #3b82f6;
+      }
+      .file-icon--zip,
+      .file-icon--rar,
+      .file-icon--7z {
+        background: #a855f7;
+      }
+      .file-icon--mp4,
+      .file-icon--mov {
+        background: #f59e0b;
+      }
+      .file-icon--jpg,
+      .file-icon--jpeg,
+      .file-icon--png,
+      .file-icon--webp,
+      .file-icon--heic,
+      .file-icon--gif {
+        background: #ec4899;
+      }
+      .file-icon--default {
+        background: #64748b;
+      }
+
+      /* Ações para itens do bucket */
+      .objects__actions {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+      }
+      .objects__actions button {
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: rgba(15, 23, 42, 0.8);
+        color: var(--text-primary);
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: border var(--transition-default),
+          background var(--transition-default),
+          transform var(--transition-default);
+      }
+      .objects__actions button:hover {
+        border-color: rgba(75, 225, 255, 0.72);
+        background: rgba(14, 165, 233, 0.16);
+        transform: translateY(-1px);
+      }
+
       .history__actions button:hover {
         border-color: rgba(75, 225, 255, 0.72);
         background: rgba(14, 165, 233, 0.16);
@@ -548,9 +667,10 @@
           <p class="eyebrow">Solarzinho - Supabase Storage</p>
           <h1>FAQ para RAG</h1>
           <p class="subtitle">
-            Fa&ccedil;a upload direto para o bucket via API S3 compat&iacute;vel
-            do Supabase. Defina o bucket, o caminho de destino e acompanhe o
-            progresso em tempo real em uma interface moderna.
+            Faça upload direto para o bucket fixo via API S3 compatível do
+            Supabase. Informe apenas suas credenciais e selecione os arquivos
+            desejados; acompanhe o progresso em tempo real em uma interface
+            moderna.
           </p>
         </header>
 
@@ -565,28 +685,7 @@
               </p>
             </div>
             <div class="form-grid form-grid--balanced">
-              <div class="field">
-                <label for="endpoint">Endpoint S3 *</label>
-                <input
-                  id="endpoint"
-                  name="endpoint"
-                  type="url"
-                  placeholder="https://seu-projeto.storage.supabase.co/storage/v1/s3"
-                  value="https://pptzoxbuuvmiilscvamt.storage.supabase.co/storage/v1/s3"
-                  required
-                />
-              </div>
-              <div class="field">
-                <label for="region">Regi&atilde;o *</label>
-                <input
-                  id="region"
-                  name="region"
-                  type="text"
-                  placeholder="sa-east-1"
-                  value="sa-east-1"
-                  required
-                />
-              </div>
+              <!-- Endpoint e região são fixos no código e não precisam ser exibidos ao usuário -->
               <div class="field">
                 <label for="access-key">Access key ID *</label>
                 <input
@@ -594,7 +693,6 @@
                   name="access-key"
                   type="text"
                   placeholder="Access key ID"
-                  value="d345179a04610edf473a0e020b633aea"
                   autocomplete="off"
                   required
                 />
@@ -607,7 +705,6 @@
                     name="secret-key"
                     type="password"
                     placeholder="Secret access key"
-                    value="6f210f74b7f05e5c0ac2e051ec98b473ab60b70bea2aee8878faff3e83545800"
                     autocomplete="new-password"
                     required
                   />
@@ -629,80 +726,49 @@
 
           <div class="section">
             <div class="section__header">
-              <h3 class="section__title">Detalhes do arquivo</h3>
+              <h3 class="section__title">Seleção de arquivo(s)</h3>
               <p class="section__subtitle">
-                Informe o bucket de destino e, se desejar, personalize a pasta e
-                o nome que ser&aacute; usado no armazenamento.
+                Selecione ou arraste os arquivos que deseja enviar para o bucket.
+                Os arquivos serão enviados diretamente para o caminho fixo.
               </p>
             </div>
-            <div class="form-grid">
-              <div class="field">
-                <label for="bucket">Bucket destino *</label>
-                <input
-                  id="bucket"
-                  name="bucket"
-                  type="text"
-                  disabled="true"
-                  value="FAQ"
-                  placeholder="ex: documentos-publicos"
-                  required
-                />
-              </div>
-              <div class="field">
-                <label for="path">Pasta/caminho (opcional)</label>
-                <input
-                  id="path"
-                  name="path"
-                  type="text"
-                  placeholder="ex: fiscal/2024/maio"
-                />
-              </div>
-              <div class="field">
-                <label for="custom-name">Nome do arquivo (opcional)</label>
-                <input
-                  id="custom-name"
-                  name="custom-name"
-                  type="text"
-                  placeholder="ex: nota-fiscal-123.pdf"
-                />
-              </div>
-            </div>
-          <div class="dropzone" id="dropzone">
-            <input
-              id="file-input"
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.gif,.mp4,.mov,.zip,.rar,.7z,.doc,.docx,.xls,.xlsx,.csv"
-              required
-            />
+            <div class="dropzone" id="dropzone">
+              <input
+                id="file-input"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,.heic,.gif,.mp4,.mov,.zip,.rar,.7z,.doc,.docx,.xls,.xlsx,.csv"
+                multiple
+                required
+              />
 
-            <div class="dropzone__placeholder">
-              <div class="dropzone__icon">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M12 3a1 1 0 0 1 .993.883L13 4v9.586l2.293-2.293a1 1 0 0 1 1.497 1.32l-.083.094-4 4a1 1 0 0 1-1.32.083l-.094-.083-4-4a1 1 0 0 1 1.32-1.497l.094.083L11 13.586V4a1 1 0 0 1 1-1zM5 17a1 1 0 0 1 .883.993L6 18v1h12v-1a1 1 0 0 1 1.993-.117L20 18v2a1 1 0 0 1-.883.993L19 21H5a1 1 0 0 1-.993-.883L4 20v-2a1 1 0 0 1 1-1z"
-                  />
-                </svg>
+              <div class="dropzone__placeholder">
+                <div class="dropzone__icon">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 3a1 1 0 0 1 .993.883L13 4v9.586l2.293-2.293a1 1 0 0 1 1.497 1.32l-.083.094-4 4a1 1 0 0 1-1.32.083l-.094-.083-4-4a1 1 0 0 1 1.32-1.497l.094.083L11 13.586V4a1 1 0 0 1 1-1zM5 17a1 1 0 0 1 .883.993L6 18v1h12v-1a1 1 0 0 1 1.993-.117L20 18v2a1 1 0 0 1-.883.993L19 21H5a1 1 0 0 1-.993-.883L4 20v-2a1 1 0 0 1 1-1z"
+                    />
+                  </svg>
+                </div>
+                <p class="dropzone__title">
+                  Solte os arquivos aqui ou clique para buscar
+                </p>
+                <p class="dropzone__subtitle">
+                  Aceita múltiplos arquivos de PDF, imagens, vídeos e compactados.
+                </p>
               </div>
-              <p class="dropzone__title">
-                Solte o arquivo aqui ou clique para buscar
-              </p>
-              <p class="dropzone__subtitle">
-                Aceita PDF, imagens, vídeos e compactados. Tamanho máximo
-                limitado pela sua configuração do Supabase.
-              </p>
-            </div>
 
-            <div class="dropzone__details" id="dropzone-details">
-              <span class="dropzone__details-status" id="file-status"></span>
-              <span class="dropzone__details-name" id="file-name"></span>
-              <span class="dropzone__details-size" id="file-size"></span>
-              <span class="dropzone__details-type" id="file-type"></span>
+              <div class="dropzone__details" id="dropzone-details">
+                <span class="dropzone__details-status" id="file-status"></span>
+                <span class="dropzone__details-name" id="file-name"></span>
+                <span class="dropzone__details-size" id="file-size"></span>
+                <span class="dropzone__details-type" id="file-type"></span>
+              </div>
             </div>
+            <p class="helper-text">
+              Dica: mantenha os nomes sem espaços e com extensão definida (ex:
+              contrato-assinado.pdf).
+            </p>
           </div>
-          <p class="helper-text">
-            Dica: mantenha os nomes sem espaços e com extensão definida (ex:
-            contrato-assinado.pdf).
-          </p>
 
           <div class="actions">
             <span class="status" id="status"></span>
@@ -722,6 +788,13 @@
           <ul class="history__list" id="history-list"></ul>
         </section>
 
+        <!-- Painel de arquivos existentes no bucket -->
+        <section class="objects" aria-live="polite">
+          <h2 class="objects__title">Arquivos no bucket</h2>
+          <p class="objects__empty" id="objects-empty">Nenhum arquivo listado.</p>
+          <ul class="objects__list" id="objects-list"></ul>
+        </section>
+
         <p class="footnote">
           Segurança: Este HTML incorpora uma chave de acesso S3. Publique apenas
           em ambientes confiáveis ou substitua por uma função
@@ -738,27 +811,22 @@
         "use strict";
 
         const defaultCredentials = Object.freeze({
+          // O endpoint inclui o bucket fixo "FAQ" ao final do caminho S3.
           endpoint:
-            "https://pptzoxbuuvmiilscvamt.storage.supabase.co/storage/v1/s3",
+            "https://pptzoxbuuvmiilscvamt.storage.supabase.co/storage/v1/s3/FAQ",
           region: "sa-east-1",
-          accessKeyId: "d345179a04610edf473a0e020b633aea",
-          secretAccessKey:
-            "6f210f74b7f05e5c0ac2e051ec98b473ab60b70bea2aee8878faff3e83545800",
+          // As chaves são inicializadas vazias por segurança e devem ser fornecidas pelo usuário.
+          accessKeyId: "",
+          secretAccessKey: "",
         });
         const STORAGE_KEY = "supabaseUploaderCredentials";
 
         const form = document.getElementById("upload-form");
-        const endpointInput = document.getElementById("endpoint");
-        const regionInput = document.getElementById("region");
+        // Apenas chaves de acesso são exibidas ao usuário. Endpoint e região são fixos em defaultCredentials.
         const accessKeyInput = document.getElementById("access-key");
         const secretKeyInput = document.getElementById("secret-key");
-        const rememberCheckbox = document.getElementById(
-          "remember-credentials"
-        );
+        const rememberCheckbox = document.getElementById("remember-credentials");
         const toggleSecretBtn = document.getElementById("toggle-secret");
-        const bucketInput = document.getElementById("bucket");
-        const pathInput = document.getElementById("path");
-        const customNameInput = document.getElementById("custom-name");
         const fileInput = document.getElementById("file-input");
         const dropzone = document.getElementById("dropzone");
         const fileNameEl = document.getElementById("file-name");
@@ -772,9 +840,14 @@
         const progressValue = document.getElementById("progress-value");
         const historyList = document.getElementById("history-list");
         const historyEmpty = document.getElementById("history-empty");
+        const objectsList = document.getElementById("objects-list");
+        const objectsEmpty = document.getElementById("objects-empty");
 
-        let selectedFile = null;
+        // Lista de arquivos selecionados para upload (pode conter vários arquivos).
+        let selectedFiles = [];
         let busy = false;
+        // Guarda as credenciais atuais usadas para listar objetos, renomear e excluir
+        let currentCredentials = null;
 
         if (toggleSecretBtn) {
           toggleSecretBtn.addEventListener("click", () => {
@@ -821,16 +894,16 @@
             return;
           }
           dropzone.classList.remove("is-dragover");
-          const file = event.dataTransfer?.files?.[0];
-          if (file) {
-            assignFile(file);
+          const files = event.dataTransfer?.files;
+          if (files && files.length) {
+            assignFiles(files);
           }
         });
 
         fileInput.addEventListener("change", () => {
-          const file = fileInput.files?.[0];
-          if (file) {
-            assignFile(file);
+          const files = fileInput.files;
+          if (files && files.length) {
+            assignFiles(files);
           }
         });
 
@@ -840,14 +913,8 @@
             return;
           }
 
-          if (!selectedFile) {
-            setStatus("Selecione um arquivo para enviar.", "error");
-            return;
-          }
-
-          const bucket = bucketInput.value.trim();
-          if (!bucket) {
-            setStatus("Informe o bucket de destino.", "error");
+          if (!selectedFiles || selectedFiles.length === 0) {
+            setStatus("Selecione um ou mais arquivos para enviar.", "error");
             return;
           }
 
@@ -862,26 +929,26 @@
             return;
           }
 
-          const objectKey = buildObjectKey(selectedFile.name);
-
           try {
             busy = true;
             toggleBusyState(true);
-            setStatus("Preparando upload...", "info");
-            startProgress();
-
             handleCredentialPersistence(credentials);
-
-            await uploadToSupabase(
-              credentials,
-              bucket,
-              objectKey,
-              selectedFile
-            );
-
-            completeProgress();
-            setStatus("Upload concluído com sucesso.", "success");
-            registerHistory(credentials, bucket, objectKey);
+            // Envia cada arquivo sequencialmente
+            for (let i = 0; i < selectedFiles.length; i++) {
+              const file = selectedFiles[i];
+              const objectKey = buildObjectKey(file.name);
+              setStatus(
+                `Enviando ${i + 1}/${selectedFiles.length}: ${file.name}`,
+                "info"
+              );
+              startProgress();
+              await uploadToSupabase(credentials, objectKey, file);
+              completeProgress();
+              registerHistory(credentials, objectKey);
+            }
+            setStatus("Upload(s) concluído(s) com sucesso.", "success");
+            // Após upload, recarrega lista de objetos
+            listObjects(credentials);
             resetFormState();
           } catch (error) {
             setStatus(
@@ -916,24 +983,93 @@
           }
         });
 
-        function assignFile(file) {
-          selectedFile = file;
+        // Ações (renomear e excluir) na lista de objetos
+        objectsList.addEventListener("click", async (event) => {
+          const btn = event.target.closest("button[data-action]");
+          if (!btn) {
+            return;
+          }
+          const action = btn.getAttribute("data-action");
+          const key = btn.getAttribute("data-key");
+          if (!key || !currentCredentials) {
+            return;
+          }
+          if (action === "delete") {
+            const confirmed = window.confirm(
+              `Deseja realmente excluir o arquivo "${key}"?`
+            );
+            if (!confirmed) {
+              return;
+            }
+            try {
+              setStatus(`Excluindo ${key}...`, "info");
+              await deleteObject(currentCredentials, key);
+              setStatus(`Arquivo excluído: ${key}`, "success");
+              // Atualiza lista
+              listObjects(currentCredentials);
+            } catch (err) {
+              setStatus(err.message || "Erro ao excluir arquivo.", "error");
+            }
+          } else if (action === "rename") {
+            const baseName = key.split("/").pop();
+            let newName = window.prompt(
+              "Digite o novo nome (com extensão):",
+              baseName
+            );
+            if (!newName || newName.trim() === "" || newName === baseName) {
+              return;
+            }
+            const sanitized = sanitizeFileName(newName);
+            // Mantém o caminho (se houver) ao construir a nova chave
+            const lastSlash = key.lastIndexOf("/");
+            const pathPart = lastSlash >= 0 ? key.slice(0, lastSlash) : "";
+            const newKey = pathPart ? pathPart + "/" + sanitized : sanitized;
+            try {
+              setStatus(`Renomeando ${key} para ${sanitized}...`, "info");
+              await renameObject(currentCredentials, key, newKey);
+              setStatus(`Arquivo renomeado para ${sanitized}`, "success");
+              listObjects(currentCredentials);
+            } catch (err) {
+              setStatus(err.message || "Erro ao renomear arquivo.", "error");
+            }
+          }
+        });
+
+        function assignFiles(files) {
+          // Aceita uma lista de arquivos e atualiza a interface para múltiplos uploads.
+          selectedFiles = Array.from(files || []);
+          if (selectedFiles.length === 0) {
+            dropzone.classList.remove("has-file");
+            if (fileStatusEl) fileStatusEl.textContent = "";
+            fileNameEl.textContent = "";
+            fileSizeEl.textContent = "";
+            fileTypeEl.textContent = "";
+            return;
+          }
           dropzone.classList.add("has-file");
           if (fileStatusEl) {
-            fileStatusEl.textContent = "Arquivo selecionado";
+            fileStatusEl.textContent =
+              selectedFiles.length === 1
+                ? "Arquivo selecionado"
+                : selectedFiles.length + " arquivos selecionados";
           }
-          fileNameEl.textContent = file.name;
-          fileSizeEl.textContent = formatBytes(file.size);
-          fileTypeEl.textContent = file.type ? file.type : "Tipo desconhecido";
-          setStatus("Arquivo pronto para upload.", "info");
+          if (selectedFiles.length === 1) {
+            const file = selectedFiles[0];
+            fileNameEl.textContent = file.name;
+            fileSizeEl.textContent = formatBytes(file.size);
+            fileTypeEl.textContent = file.type ? file.type : "Tipo desconhecido";
+          } else {
+            fileNameEl.textContent = selectedFiles.map((f) => f.name).join(", ");
+            fileSizeEl.textContent = "";
+            fileTypeEl.textContent = "";
+          }
+          setStatus("Arquivo(s) pronto(s) para upload.", "info");
         }
 
         function resetFormState() {
-          bucketInput.value = "";
-          pathInput.value = "";
-          customNameInput.value = "";
+          // Limpa seleção de arquivos e estado visual
           fileInput.value = "";
-          selectedFile = null;
+          selectedFiles = [];
           dropzone.classList.remove("has-file");
           if (fileStatusEl) {
             fileStatusEl.textContent = "";
@@ -947,13 +1083,8 @@
         function toggleBusyState(isBusy) {
           submitBtn.disabled = isBusy;
           fileInput.disabled = isBusy;
-          endpointInput.readOnly = isBusy;
-          regionInput.readOnly = isBusy;
           accessKeyInput.readOnly = isBusy;
           secretKeyInput.readOnly = isBusy;
-          bucketInput.readOnly = isBusy;
-          pathInput.readOnly = isBusy;
-          customNameInput.readOnly = isBusy;
           if (toggleSecretBtn) {
             toggleSecretBtn.disabled = isBusy;
           }
@@ -964,22 +1095,11 @@
         }
 
         function readCredentials() {
-          const endpoint = sanitizeEndpoint(endpointInput.value);
-          const region = regionInput.value.trim().toLowerCase();
+          // Usa endpoint e região fixos definidos em defaultCredentials
+          const endpoint = defaultCredentials.endpoint;
+          const region = defaultCredentials.region;
           const accessKeyId = accessKeyInput.value.trim().replace(/\s+/g, "");
           const secretAccessKey = secretKeyInput.value.trim();
-
-          if (!endpoint) {
-            throw new Error("Informe o endpoint S3 do Supabase.");
-          }
-
-          if (!/^https?:\/\//i.test(endpoint)) {
-            throw new Error("O endpoint deve começar com http:// ou https://.");
-          }
-
-          if (!region) {
-            throw new Error("Informe a região do bucket (ex: sa-east-1).");
-          }
 
           if (!accessKeyId) {
             throw new Error("Informe o access key ID.");
@@ -1004,19 +1124,19 @@
             if (rememberCheckbox) {
               rememberCheckbox.checked = true;
             }
+            // Carrega lista de objetos quando houver credenciais armazenadas
+            listObjects(stored);
             return;
           }
-
-          applyCredentialsToForm(defaultCredentials);
+          // Nenhuma credencial armazenada: limpa campos
+          applyCredentialsToForm({ accessKeyId: "", secretAccessKey: "" });
           if (rememberCheckbox) {
             rememberCheckbox.checked = false;
           }
         }
 
         function applyCredentialsToForm(credentials) {
-          const source = credentials || defaultCredentials;
-          endpointInput.value = source.endpoint || "";
-          regionInput.value = (source.region || "").toLowerCase();
+          const source = credentials || {};
           accessKeyInput.value = source.accessKeyId || "";
           secretKeyInput.value = source.secretAccessKey || "";
           secretKeyInput.type = "password";
@@ -1055,14 +1175,21 @@
               return null;
             }
 
-            const endpoint = sanitizeEndpoint(parsed.endpoint || "");
-            const region = (parsed.region || "").trim().toLowerCase();
+            // Usa endpoint e região padrão se não estiverem armazenados
+            const endpoint = sanitizeEndpoint(
+              parsed.endpoint || defaultCredentials.endpoint
+            );
+            const region = (parsed.region || defaultCredentials.region || "")
+              .toString()
+              .trim()
+              .toLowerCase();
             const accessKeyId = (parsed.accessKeyId || "")
+              .toString()
               .trim()
               .replace(/\s+/g, "");
-            const secretAccessKey = (parsed.secretAccessKey || "").trim();
+            const secretAccessKey = (parsed.secretAccessKey || "").toString().trim();
 
-            if (!endpoint || !region || !accessKeyId || !secretAccessKey) {
+            if (!accessKeyId || !secretAccessKey) {
               return null;
             }
 
@@ -1124,10 +1251,9 @@
         }
 
         function buildObjectKey(fallbackName) {
-          const path = sanitizePath(pathInput.value.trim());
-          const rawName = customNameInput.value.trim() || fallbackName;
-          const safeName = sanitizeFileName(rawName);
-          return path ? path + "/" + safeName : safeName;
+          // O caminho e nome personalizado foram removidos; usa apenas o nome do arquivo sanitizado
+          const safeName = sanitizeFileName(fallbackName);
+          return safeName;
         }
 
         function sanitizePath(path) {
@@ -1188,9 +1314,10 @@
           );
         }
 
-        async function uploadToSupabase(credentials, bucket, objectKey, file) {
+        async function uploadToSupabase(credentials, objectKey, file) {
+          // O endpoint já inclui o bucket, portanto, basta concatenar o nome do objeto
           const endpoint = credentials.endpoint.replace(/\/+$/, "");
-          const encodedPath = encodePath(bucket + "/" + objectKey);
+          const encodedPath = encodePath(objectKey);
           const uploadUrl = endpoint + "/" + encodedPath;
           const url = new URL(uploadUrl);
 
@@ -1306,7 +1433,8 @@
           });
         }
 
-        function registerHistory(credentials, bucket, objectKey) {
+        function registerHistory(credentials, objectKey) {
+          // Mostra que há pelo menos um item na lista
           historyEmpty.hidden = true;
           historyEmpty.textContent = "";
 
@@ -1320,7 +1448,8 @@
 
           const metaEl = document.createElement("p");
           metaEl.className = "history__meta";
-          metaEl.textContent = "Bucket: " + bucket;
+          // Indica que o bucket é fixo
+          metaEl.textContent = "Bucket: FAQ";
 
           infoWrapper.appendChild(nameEl);
           infoWrapper.appendChild(metaEl);
@@ -1328,7 +1457,7 @@
           const actions = document.createElement("div");
           actions.className = "history__actions";
 
-          const publicUrl = buildPublicUrl(credentials, bucket, objectKey);
+          const publicUrl = buildPublicUrl(credentials, objectKey);
           const copyButton = document.createElement("button");
           copyButton.type = "button";
           copyButton.textContent = "Copiar URL";
@@ -1341,9 +1470,11 @@
           historyList.prepend(listItem);
         }
 
-        function buildPublicUrl(credentials, bucket, objectKey) {
-          const base = credentials.endpoint.replace(/\/s3$/, "");
-          return base + "/object/" + encodePath(bucket + "/" + objectKey);
+        function buildPublicUrl(credentials, objectKey) {
+          // Constrói a URL pública substituindo a rota S3 pela rota de objeto
+          // O endpoint tem a forma .../storage/v1/s3/FAQ
+          const baseEndpoint = credentials.endpoint.replace(/\/storage\/v1\/s3\/FAQ$/, "/storage/v1");
+          return baseEndpoint + "/object/FAQ/" + encodePath(objectKey);
         }
 
         function formatAmzDate(date) {
@@ -1414,6 +1545,378 @@
           }
           throw new TypeError("Valor inesperado para conversão em Uint8Array.");
         }
+
+        /**
+         * Lista os objetos presentes no bucket fixo utilizando a assinatura V4.
+         * Após recuperar a lista, atualiza o painel de objetos na interface.
+         */
+        async function listObjects(credentials) {
+          try {
+            if (!credentials || !credentials.accessKeyId || !credentials.secretAccessKey) {
+              return;
+            }
+            // Armazena as credenciais atuais para operações posteriores (ex: exclusão/renomeação)
+            currentCredentials = credentials;
+            setStatus("Carregando arquivos do bucket...", "info");
+            const endpoint = credentials.endpoint.replace(/\/+\$/, "");
+            // Acrescenta query string para listagem no S3 compatível
+            const url = new URL(endpoint + "?list-type=2");
+            const canonicalUri = url.pathname;
+            const canonicalQueryString = "list-type=2";
+            const payloadHash = "UNSIGNED-PAYLOAD";
+            const now = new Date();
+            const amzDate = formatAmzDate(now);
+            const dateStamp = amzDate.slice(0, 8);
+            const canonicalHeaders =
+              "host:" +
+              url.host +
+              "\n" +
+              "x-amz-content-sha256:" +
+              payloadHash +
+              "\n" +
+              "x-amz-date:" +
+              amzDate +
+              "\n";
+            const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+            const canonicalRequest =
+              "GET\n" +
+              canonicalUri +
+              "\n" +
+              canonicalQueryString +
+              "\n" +
+              canonicalHeaders +
+              "\n" +
+              signedHeaders +
+              "\n" +
+              payloadHash;
+            const stringToSign =
+              "AWS4-HMAC-SHA256\n" +
+              amzDate +
+              "\n" +
+              dateStamp +
+              "/" +
+              credentials.region +
+              "/s3/aws4_request\n" +
+              (await sha256Hex(canonicalRequest));
+            const signingKey = await getSignatureKey(
+              credentials.secretAccessKey,
+              dateStamp,
+              credentials.region,
+              "s3"
+            );
+            const signature = bufferToHex(await hmac(signingKey, stringToSign));
+            const authorization =
+              "AWS4-HMAC-SHA256 Credential=" +
+              credentials.accessKeyId +
+              "/" +
+              dateStamp +
+              "/" +
+              credentials.region +
+              "/s3/aws4_request, SignedHeaders=" +
+              signedHeaders +
+              ", Signature=" +
+              signature;
+            const response = await fetch(url.toString(), {
+              method: "GET",
+              headers: {
+                "x-amz-date": amzDate,
+                "x-amz-content-sha256": payloadHash,
+                Authorization: authorization,
+              },
+            });
+            if (!response.ok) {
+              throw new Error("Não foi possível listar os arquivos.");
+            }
+            const xml = await response.text();
+            const keys = parseObjectKeys(xml);
+            updateObjectsList(keys);
+            setStatus("Lista de arquivos carregada.", "success");
+          } catch (error) {
+            setStatus(error.message || "Erro ao listar arquivos.", "warning");
+          }
+        }
+
+        /**
+         * Extrai todas as tags <Key> de um XML de listagem do S3.
+         */
+        function parseObjectKeys(xmlString) {
+          try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlString, "application/xml");
+            const keyEls = doc.getElementsByTagName("Key");
+            const keys = [];
+            for (let i = 0; i < keyEls.length; i++) {
+              const text = keyEls[i].textContent || "";
+              const key = text.trim();
+              // Ignora arquivos de placeholder de pasta vazia
+              if (key === ".emptyFolderPlaceholder") {
+                continue;
+              }
+              keys.push(key);
+            }
+            return keys;
+          } catch (_) {
+            return [];
+          }
+        }
+
+        /**
+         * Atualiza o painel de objetos no DOM a partir de uma lista de chaves.
+         */
+        function updateObjectsList(keys) {
+          // Limpa lista atual
+          objectsList.innerHTML = "";
+          if (!keys || keys.length === 0) {
+            objectsEmpty.hidden = false;
+            objectsEmpty.textContent = "Nenhum arquivo listado.";
+            return;
+          }
+          objectsEmpty.hidden = true;
+          objectsEmpty.textContent = "";
+          keys.forEach((key) => {
+            const item = document.createElement("li");
+            item.className = "objects__item";
+            // Ícone de arquivo baseado na extensão
+            const ext = (key.split(".").pop() || "").toLowerCase();
+            let iconClass = "file-icon--default";
+            if (["pdf"].includes(ext)) {
+              iconClass = "file-icon--pdf";
+            } else if (["csv", "xls", "xlsx"].includes(ext)) {
+              iconClass = "file-icon--csv";
+            } else if (["doc", "docx"].includes(ext)) {
+              iconClass = "file-icon--doc";
+            } else if (["zip", "rar", "7z"].includes(ext)) {
+              iconClass = "file-icon--zip";
+            } else if (["mp4", "mov"].includes(ext)) {
+              iconClass = "file-icon--mp4";
+            } else if (["jpg", "jpeg", "png", "webp", "heic", "gif"].includes(ext)) {
+              iconClass = "file-icon--jpg";
+            }
+            const icon = document.createElement("span");
+            icon.className = `file-icon ${iconClass}`;
+            icon.textContent = ext || "?";
+            // Nome do arquivo
+            const name = document.createElement("span");
+            name.className = "objects__name";
+            name.textContent = key;
+            // Ações (renomear e excluir)
+            const actions = document.createElement("div");
+            actions.className = "objects__actions";
+            const renameBtn = document.createElement("button");
+            renameBtn.type = "button";
+            renameBtn.textContent = "Renomear";
+            renameBtn.setAttribute("data-action", "rename");
+            renameBtn.setAttribute("data-key", key);
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.textContent = "Excluir";
+            deleteBtn.setAttribute("data-action", "delete");
+            deleteBtn.setAttribute("data-key", key);
+            actions.appendChild(renameBtn);
+            actions.appendChild(deleteBtn);
+            // Monta item
+            item.appendChild(icon);
+            item.appendChild(name);
+            item.appendChild(actions);
+            objectsList.appendChild(item);
+          });
+        }
+
+        /**
+         * Envia uma requisição DELETE para remover um objeto do bucket.
+         */
+        async function deleteObject(credentials, objectKey) {
+          const endpoint = credentials.endpoint.replace(/\/+$/, "");
+          const encodedPath = encodePath(objectKey);
+          const url = new URL(endpoint + "/" + encodedPath);
+          const canonicalUri = url.pathname;
+          const canonicalQueryString = "";
+          const payloadHash = "UNSIGNED-PAYLOAD";
+          const now = new Date();
+          const amzDate = formatAmzDate(now);
+          const dateStamp = amzDate.slice(0, 8);
+          const canonicalHeaders =
+            "host:" +
+            url.host +
+            "\n" +
+            "x-amz-content-sha256:" +
+            payloadHash +
+            "\n" +
+            "x-amz-date:" +
+            amzDate +
+            "\n";
+          const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+          const canonicalRequest =
+            "DELETE\n" +
+            canonicalUri +
+            "\n" +
+            canonicalQueryString +
+            "\n" +
+            canonicalHeaders +
+            "\n" +
+            signedHeaders +
+            "\n" +
+            payloadHash;
+          const stringToSign =
+            "AWS4-HMAC-SHA256\n" +
+            amzDate +
+            "\n" +
+            dateStamp +
+            "/" +
+            credentials.region +
+            "/s3/aws4_request\n" +
+            (await sha256Hex(canonicalRequest));
+          const signingKey = await getSignatureKey(
+            credentials.secretAccessKey,
+            dateStamp,
+            credentials.region,
+            "s3"
+          );
+          const signature = bufferToHex(await hmac(signingKey, stringToSign));
+          const authorization =
+            "AWS4-HMAC-SHA256 Credential=" +
+            credentials.accessKeyId +
+            "/" +
+            dateStamp +
+            "/" +
+            credentials.region +
+            "/s3/aws4_request, SignedHeaders=" +
+            signedHeaders +
+            ", Signature=" +
+            signature;
+          const response = await fetch(url.toString(), {
+            method: "DELETE",
+            headers: {
+              "x-amz-date": amzDate,
+              "x-amz-content-sha256": payloadHash,
+              Authorization: authorization,
+            },
+          });
+          if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(
+              `Falha ao excluir (${response.status}): ${text || response.statusText}`
+            );
+          }
+        }
+
+        /**
+         * Renomeia um objeto copiando para um novo nome e excluindo o original.
+         */
+        async function renameObject(credentials, oldKey, newKey) {
+          // Copia o objeto para o novo nome
+          await copyObject(credentials, oldKey, newKey);
+          // Exclui o original
+          await deleteObject(credentials, oldKey);
+        }
+
+        /**
+         * Copia um objeto para um novo nome dentro do mesmo bucket.
+         */
+        async function copyObject(credentials, sourceKey, targetKey) {
+          const endpoint = credentials.endpoint.replace(/\/+$/, "");
+          const encodedTarget = encodePath(targetKey);
+          const url = new URL(endpoint + "/" + encodedTarget);
+          const canonicalUri = url.pathname;
+          const canonicalQueryString = "";
+          const payloadHash = "UNSIGNED-PAYLOAD";
+          const now = new Date();
+          const amzDate = formatAmzDate(now);
+          const dateStamp = amzDate.slice(0, 8);
+          // Cabeçalho x-amz-copy-source deve usar o caminho completo do objeto de origem (bucket + chave)
+          // Valor do cabeçalho deve incluir o bucket e chave original. Usa encodeURI para preservar '/'
+          const copySource = encodeURI(
+            "FAQ/" + sourceKey.replace(/^\/+/, "")
+          );
+          const canonicalHeaders =
+            "host:" +
+            url.host +
+            "\n" +
+            "x-amz-content-sha256:" +
+            payloadHash +
+            "\n" +
+            "x-amz-copy-source:" +
+            copySource +
+            "\n" +
+            "x-amz-date:" +
+            amzDate +
+            "\n";
+          const signedHeaders =
+            "host;x-amz-content-sha256;x-amz-copy-source;x-amz-date";
+          const canonicalRequest =
+            "PUT\n" +
+            canonicalUri +
+            "\n" +
+            canonicalQueryString +
+            "\n" +
+            canonicalHeaders +
+            "\n" +
+            signedHeaders +
+            "\n" +
+            payloadHash;
+          const stringToSign =
+            "AWS4-HMAC-SHA256\n" +
+            amzDate +
+            "\n" +
+            dateStamp +
+            "/" +
+            credentials.region +
+            "/s3/aws4_request\n" +
+            (await sha256Hex(canonicalRequest));
+          const signingKey = await getSignatureKey(
+            credentials.secretAccessKey,
+            dateStamp,
+            credentials.region,
+            "s3"
+          );
+          const signature = bufferToHex(await hmac(signingKey, stringToSign));
+          const authorization =
+            "AWS4-HMAC-SHA256 Credential=" +
+            credentials.accessKeyId +
+            "/" +
+            dateStamp +
+            "/" +
+            credentials.region +
+            "/s3/aws4_request, SignedHeaders=" +
+            signedHeaders +
+            ", Signature=" +
+            signature;
+          const response = await fetch(url.toString(), {
+            method: "PUT",
+            headers: {
+              "x-amz-date": amzDate,
+              "x-amz-content-sha256": payloadHash,
+              "x-amz-copy-source": copySource,
+              Authorization: authorization,
+            },
+          });
+          if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(
+              `Falha ao renomear (${response.status}): ${text || response.statusText}`
+            );
+          }
+        }
+
+        // Carrega lista de objetos quando o usuário preencher as chaves de acesso
+        function maybeListObjects() {
+          if (busy) {
+            return;
+          }
+          const access = accessKeyInput.value.trim();
+          const secret = secretKeyInput.value.trim();
+          if (access && secret) {
+            const creds = {
+              endpoint: defaultCredentials.endpoint,
+              region: defaultCredentials.region,
+              accessKeyId: access.replace(/\s+/g, ""),
+              secretAccessKey: secret,
+            };
+            listObjects(creds);
+          }
+        }
+        accessKeyInput.addEventListener("blur", maybeListObjects);
+        secretKeyInput.addEventListener("blur", maybeListObjects);
       })();
     </script>
   </body>
