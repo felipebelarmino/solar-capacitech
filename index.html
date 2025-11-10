@@ -728,8 +728,9 @@
             <div class="section__header">
               <h3 class="section__title">Seleção de arquivo(s)</h3>
               <p class="section__subtitle">
-                Selecione ou arraste os arquivos que deseja enviar para o bucket.
-                Os arquivos serão enviados diretamente para o caminho fixo.
+                Selecione ou arraste os arquivos que deseja enviar para o
+                bucket. Os arquivos serão enviados diretamente para o caminho
+                fixo.
               </p>
             </div>
             <div class="dropzone" id="dropzone">
@@ -753,7 +754,8 @@
                   Solte os arquivos aqui ou clique para buscar
                 </p>
                 <p class="dropzone__subtitle">
-                  Aceita múltiplos arquivos de PDF, imagens, vídeos e compactados.
+                  Aceita múltiplos arquivos de PDF, imagens, vídeos e
+                  compactados.
                 </p>
               </div>
 
@@ -779,6 +781,18 @@
             <span class="progress__value" id="progress-value">0%</span>
           </div>
         </form>
+        <br>
+
+        <div class="section">
+          <!-- Painel de arquivos existentes no bucket -->
+          <!-- <section class="objects" aria-live="polite"> -->
+          <h2 class="objects__title">Arquivos no bucket</h2>
+          <p class="objects__empty" id="objects-empty">
+            Nenhum arquivo listado.
+          </p>
+          <ul class="objects__list" id="objects-list"></ul>
+          <!-- </section> -->
+        </div>
 
         <section class="history" aria-live="polite">
           <h2 class="history__title">Uploads recentes</h2>
@@ -786,13 +800,6 @@
             Você ainda não fez nenhum upload nesta sessão.
           </p>
           <ul class="history__list" id="history-list"></ul>
-        </section>
-
-        <!-- Painel de arquivos existentes no bucket -->
-        <section class="objects" aria-live="polite">
-          <h2 class="objects__title">Arquivos no bucket</h2>
-          <p class="objects__empty" id="objects-empty">Nenhum arquivo listado.</p>
-          <ul class="objects__list" id="objects-list"></ul>
         </section>
 
         <p class="footnote">
@@ -825,7 +832,9 @@
         // Apenas chaves de acesso são exibidas ao usuário. Endpoint e região são fixos em defaultCredentials.
         const accessKeyInput = document.getElementById("access-key");
         const secretKeyInput = document.getElementById("secret-key");
-        const rememberCheckbox = document.getElementById("remember-credentials");
+        const rememberCheckbox = document.getElementById(
+          "remember-credentials"
+        );
         const toggleSecretBtn = document.getElementById("toggle-secret");
         const fileInput = document.getElementById("file-input");
         const dropzone = document.getElementById("dropzone");
@@ -1057,9 +1066,13 @@
             const file = selectedFiles[0];
             fileNameEl.textContent = file.name;
             fileSizeEl.textContent = formatBytes(file.size);
-            fileTypeEl.textContent = file.type ? file.type : "Tipo desconhecido";
+            fileTypeEl.textContent = file.type
+              ? file.type
+              : "Tipo desconhecido";
           } else {
-            fileNameEl.textContent = selectedFiles.map((f) => f.name).join(", ");
+            fileNameEl.textContent = selectedFiles
+              .map((f) => f.name)
+              .join(", ");
             fileSizeEl.textContent = "";
             fileTypeEl.textContent = "";
           }
@@ -1187,7 +1200,9 @@
               .toString()
               .trim()
               .replace(/\s+/g, "");
-            const secretAccessKey = (parsed.secretAccessKey || "").toString().trim();
+            const secretAccessKey = (parsed.secretAccessKey || "")
+              .toString()
+              .trim();
 
             if (!accessKeyId || !secretAccessKey) {
               return null;
@@ -1473,7 +1488,10 @@
         function buildPublicUrl(credentials, objectKey) {
           // Constrói a URL pública substituindo a rota S3 pela rota de objeto
           // O endpoint tem a forma .../storage/v1/s3/FAQ
-          const baseEndpoint = credentials.endpoint.replace(/\/storage\/v1\/s3\/FAQ$/, "/storage/v1");
+          const baseEndpoint = credentials.endpoint.replace(
+            /\/storage\/v1\/s3\/FAQ$/,
+            "/storage/v1"
+          );
           return baseEndpoint + "/object/FAQ/" + encodePath(objectKey);
         }
 
@@ -1552,7 +1570,11 @@
          */
         async function listObjects(credentials) {
           try {
-            if (!credentials || !credentials.accessKeyId || !credentials.secretAccessKey) {
+            if (
+              !credentials ||
+              !credentials.accessKeyId ||
+              !credentials.secretAccessKey
+            ) {
               return;
             }
             // Armazena as credenciais atuais para operações posteriores (ex: exclusão/renomeação)
@@ -1689,7 +1711,9 @@
               iconClass = "file-icon--zip";
             } else if (["mp4", "mov"].includes(ext)) {
               iconClass = "file-icon--mp4";
-            } else if (["jpg", "jpeg", "png", "webp", "heic", "gif"].includes(ext)) {
+            } else if (
+              ["jpg", "jpeg", "png", "webp", "heic", "gif"].includes(ext)
+            ) {
               iconClass = "file-icon--jpg";
             }
             const icon = document.createElement("span");
@@ -1795,7 +1819,9 @@
           if (!response.ok) {
             const text = await response.text().catch(() => "");
             throw new Error(
-              `Falha ao excluir (${response.status}): ${text || response.statusText}`
+              `Falha ao excluir (${response.status}): ${
+                text || response.statusText
+              }`
             );
           }
         }
@@ -1825,9 +1851,7 @@
           const dateStamp = amzDate.slice(0, 8);
           // Cabeçalho x-amz-copy-source deve usar o caminho completo do objeto de origem (bucket + chave)
           // Valor do cabeçalho deve incluir o bucket e chave original. Usa encodeURI para preservar '/'
-          const copySource = encodeURI(
-            "FAQ/" + sourceKey.replace(/^\/+/, "")
-          );
+          const copySource = encodeURI("FAQ/" + sourceKey.replace(/^\/+/, ""));
           const canonicalHeaders =
             "host:" +
             url.host +
@@ -1893,7 +1917,9 @@
           if (!response.ok) {
             const text = await response.text().catch(() => "");
             throw new Error(
-              `Falha ao renomear (${response.status}): ${text || response.statusText}`
+              `Falha ao renomear (${response.status}): ${
+                text || response.statusText
+              }`
             );
           }
         }
@@ -1921,6 +1947,3 @@
     </script>
   </body>
 </html>
-
-
-
