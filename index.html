@@ -664,8 +664,7 @@
     <main class="app">
       <section class="card">
         <header class="hero">
-          <p class="eyebrow">Solarzinho - Supabase Storage</p>
-          <h1>FAQ para RAG</h1>
+          <h1 class="eyebrow">Solarzinho - Supabase FAQ Storage</h1>
           <p class="subtitle">
             Faça upload direto para o bucket fixo via API S3 compatível do
             Supabase. Informe apenas suas credenciais e selecione os arquivos
@@ -770,18 +769,18 @@
               Dica: mantenha os nomes sem espaços e com extensão definida (ex:
               contrato-assinado.pdf).
             </p>
-          </div>
 
-          <div class="actions">
-            <span class="status" id="status"></span>
-            <button type="submit" id="submit">Enviar arquivo</button>
-            <div class="progress" id="progress">
-              <div class="progress__bar" id="progress-bar"></div>
+            <div class="actions">
+              <span class="status" id="status"></span>
+              <button type="submit" id="submit">Enviar arquivo</button>
+              <div class="progress" id="progress">
+                <div class="progress__bar" id="progress-bar"></div>
+              </div>
+              <span class="progress__value" id="progress-value"></span>
             </div>
-            <span class="progress__value" id="progress-value">0%</span>
           </div>
         </form>
-        <br>
+        <br />
 
         <div class="section">
           <!-- Painel de arquivos existentes no bucket -->
