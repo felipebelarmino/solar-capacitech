@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
@@ -664,7 +664,8 @@
     <main class="app">
       <section class="card">
         <header class="hero">
-          <h1 class="eyebrow">Solarzinho - Supabase FAQ Storage</h1>
+          <p class="eyebrow">Solarzinho - Supabase Storage</p>
+          <h1>FAQ para RAG</h1>
           <p class="subtitle">
             Faça upload direto para o bucket fixo via API S3 compatível do
             Supabase. Informe apenas suas credenciais e selecione os arquivos
@@ -723,13 +724,50 @@
             </label>
           </div>
 
+          <div class="section section--webhook">
+            <div class="section__header">
+              <h3 class="section__title">Processamento via webhook</h3>
+              <p class="section__subtitle">
+                Informe o endpoint que recebe o POST com a URL publica para uso no RAG.
+              </p>
+            </div>
+            <div class="form-grid form-grid--balanced">
+              <div class="field">
+                <label for="webhook-url">Webhook URL</label>
+                <input
+                  id="webhook-url"
+                  name="webhook-url"
+                  type="url"
+                  inputmode="url"
+                  placeholder="https://exemplo.com/webhook"
+                  autocomplete="off"
+                  spellcheck="false"
+                  value="https://solarzinho-n8n.klivrx.easypanel.host/webhook/faq-to-rag"
+                />
+              </div>
+              <div class="field">
+                <label for="webhook-token">Token bearer (opcional)</label>
+                <input
+                  id="webhook-token"
+                  name="webhook-token"
+                  type="text"
+                  placeholder="Token para Authorization"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+            <p class="helper-text">
+              Ao clicar em Processar um arquivo, este endpoint recebe um JSON com a propriedade "url".
+            </p>
+          </div>
+
           <div class="section">
             <div class="section__header">
               <h3 class="section__title">Seleção de arquivo(s)</h3>
               <p class="section__subtitle">
-                Selecione ou arraste os arquivos que deseja enviar para o
-                bucket. Os arquivos serão enviados diretamente para o caminho
-                fixo.
+                Selecione ou arraste os arquivos que deseja enviar para o bucket.
+                Os arquivos serão enviados diretamente para o caminho fixo.
               </p>
             </div>
             <div class="dropzone" id="dropzone">
@@ -753,8 +791,7 @@
                   Solte os arquivos aqui ou clique para buscar
                 </p>
                 <p class="dropzone__subtitle">
-                  Aceita múltiplos arquivos de PDF, imagens, vídeos e
-                  compactados.
+                  Aceita múltiplos arquivos de PDF, imagens, vídeos e compactados.
                 </p>
               </div>
 
@@ -769,29 +806,17 @@
               Dica: mantenha os nomes sem espaços e com extensão definida (ex:
               contrato-assinado.pdf).
             </p>
+          </div>
 
-            <div class="actions">
-              <span class="status" id="status"></span>
-              <button type="submit" id="submit">Enviar arquivo</button>
-              <div class="progress" id="progress">
-                <div class="progress__bar" id="progress-bar"></div>
-              </div>
-              <span class="progress__value" id="progress-value"></span>
+          <div class="actions">
+            <span class="status" id="status"></span>
+            <button type="submit" id="submit">Enviar arquivo</button>
+            <div class="progress" id="progress">
+              <div class="progress__bar" id="progress-bar"></div>
             </div>
+            <span class="progress__value" id="progress-value">0%</span>
           </div>
         </form>
-        <br />
-
-        <div class="section">
-          <!-- Painel de arquivos existentes no bucket -->
-          <!-- <section class="objects" aria-live="polite"> -->
-          <h2 class="objects__title">Arquivos no bucket</h2>
-          <p class="objects__empty" id="objects-empty">
-            Nenhum arquivo listado.
-          </p>
-          <ul class="objects__list" id="objects-list"></ul>
-          <!-- </section> -->
-        </div>
 
         <section class="history" aria-live="polite">
           <h2 class="history__title">Uploads recentes</h2>
@@ -799,6 +824,13 @@
             Você ainda não fez nenhum upload nesta sessão.
           </p>
           <ul class="history__list" id="history-list"></ul>
+        </section>
+
+        <!-- Painel de arquivos existentes no bucket -->
+        <section class="objects" aria-live="polite">
+          <h2 class="objects__title">Arquivos no bucket</h2>
+          <p class="objects__empty" id="objects-empty">Nenhum arquivo listado.</p>
+          <ul class="objects__list" id="objects-list"></ul>
         </section>
 
         <p class="footnote">
@@ -827,13 +859,17 @@
         });
         const STORAGE_KEY = "supabaseUploaderCredentials";
 
+        // Configuracao padrao exibida na interface para envio ao webhook n8n.
+        // O valor pode ser alterado pela interface antes de acionar o processamento.
+        const DEFAULT_WEBHOOK_URL = "https://solarzinho-n8n.klivrx.easypanel.host/webhook/faq-to-rag";
+        // Token opcional para autenticação no webhook (deixe vazio se não usar).
+        const DEFAULT_WEBHOOK_TOKEN = "";
+
         const form = document.getElementById("upload-form");
         // Apenas chaves de acesso são exibidas ao usuário. Endpoint e região são fixos em defaultCredentials.
         const accessKeyInput = document.getElementById("access-key");
         const secretKeyInput = document.getElementById("secret-key");
-        const rememberCheckbox = document.getElementById(
-          "remember-credentials"
-        );
+        const rememberCheckbox = document.getElementById("remember-credentials");
         const toggleSecretBtn = document.getElementById("toggle-secret");
         const fileInput = document.getElementById("file-input");
         const dropzone = document.getElementById("dropzone");
@@ -850,6 +886,15 @@
         const historyEmpty = document.getElementById("history-empty");
         const objectsList = document.getElementById("objects-list");
         const objectsEmpty = document.getElementById("objects-empty");
+        const webhookUrlInput = document.getElementById("webhook-url");
+        const webhookTokenInput = document.getElementById("webhook-token");
+
+        if (webhookUrlInput && !webhookUrlInput.value) {
+          webhookUrlInput.value = DEFAULT_WEBHOOK_URL;
+        }
+        if (webhookTokenInput && !webhookTokenInput.value && DEFAULT_WEBHOOK_TOKEN) {
+          webhookTokenInput.value = DEFAULT_WEBHOOK_TOKEN;
+        }
 
         // Lista de arquivos selecionados para upload (pode conter vários arquivos).
         let selectedFiles = [];
@@ -1040,6 +1085,14 @@
             } catch (err) {
               setStatus(err.message || "Erro ao renomear arquivo.", "error");
             }
+          } else if (action === "download") {
+            try {
+              setStatus(`Baixando ${key}...`, "info");
+              await downloadObject(currentCredentials, key);
+              setStatus(`Download iniciado para ${key}`, "success");
+            } catch (err) {
+              setStatus(err.message || "Erro ao baixar arquivo.", "error");
+            }
           }
         });
 
@@ -1065,13 +1118,9 @@
             const file = selectedFiles[0];
             fileNameEl.textContent = file.name;
             fileSizeEl.textContent = formatBytes(file.size);
-            fileTypeEl.textContent = file.type
-              ? file.type
-              : "Tipo desconhecido";
+            fileTypeEl.textContent = file.type ? file.type : "Tipo desconhecido";
           } else {
-            fileNameEl.textContent = selectedFiles
-              .map((f) => f.name)
-              .join(", ");
+            fileNameEl.textContent = selectedFiles.map((f) => f.name).join(", ");
             fileSizeEl.textContent = "";
             fileTypeEl.textContent = "";
           }
@@ -1103,6 +1152,12 @@
           if (rememberCheckbox) {
             rememberCheckbox.disabled = isBusy;
           }
+          if (webhookUrlInput) {
+            webhookUrlInput.readOnly = isBusy;
+          }
+          if (webhookTokenInput) {
+            webhookTokenInput.readOnly = isBusy;
+          }
           dropzone.classList.toggle("is-disabled", isBusy);
         }
 
@@ -1127,6 +1182,19 @@
             accessKeyId,
             secretAccessKey,
           };
+        }
+
+        function readWebhookConfig() {
+          const providedUrl = webhookUrlInput ? webhookUrlInput.value.trim() : "";
+          const providedToken = webhookTokenInput ? webhookTokenInput.value.trim() : "";
+          const url = providedUrl || DEFAULT_WEBHOOK_URL;
+          const token = providedToken || DEFAULT_WEBHOOK_TOKEN;
+
+          if (!url) {
+            throw new Error("Informe o endpoint do webhook para processar arquivos.");
+          }
+
+          return { url, token };
         }
 
         function hydrateCredentials() {
@@ -1199,9 +1267,7 @@
               .toString()
               .trim()
               .replace(/\s+/g, "");
-            const secretAccessKey = (parsed.secretAccessKey || "")
-              .toString()
-              .trim();
+            const secretAccessKey = (parsed.secretAccessKey || "").toString().trim();
 
             if (!accessKeyId || !secretAccessKey) {
               return null;
@@ -1335,22 +1401,21 @@
           const uploadUrl = endpoint + "/" + encodedPath;
           const url = new URL(uploadUrl);
 
+          // Determina o Content-Type do arquivo para definir o cabeçalho e assiná-lo
+          const contentType = file && file.type ? file.type : "application/octet-stream";
           const now = new Date();
           const amzDate = formatAmzDate(now);
           const dateStamp = amzDate.slice(0, 8);
           const payloadHash = "UNSIGNED-PAYLOAD";
           const canonicalUri = url.pathname;
+          // Inclui content-type nos cabeçalhos canônicos para assinatura
           const canonicalHeaders =
-            "host:" +
-            url.host +
-            "\n" +
-            "x-amz-content-sha256:" +
-            payloadHash +
-            "\n" +
-            "x-amz-date:" +
-            amzDate +
-            "\n";
-          const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+            "content-type:" + contentType + "\n" +
+            "host:" + url.host + "\n" +
+            "x-amz-content-sha256:" + payloadHash + "\n" +
+            "x-amz-date:" + amzDate + "\n";
+          const signedHeaders =
+            "content-type;host;x-amz-content-sha256;x-amz-date";
           const canonicalRequest =
             "PUT\n" +
             canonicalUri +
@@ -1369,7 +1434,6 @@
             credentials.region +
             "/s3/aws4_request\n" +
             (await sha256Hex(canonicalRequest));
-
           const signingKey = await getSignatureKey(
             credentials.secretAccessKey,
             dateStamp,
@@ -1377,7 +1441,6 @@
             "s3"
           );
           const signature = bufferToHex(await hmac(signingKey, stringToSign));
-
           const authorization =
             "AWS4-HMAC-SHA256 Credential=" +
             credentials.accessKeyId +
@@ -1389,8 +1452,8 @@
             signedHeaders +
             ", Signature=" +
             signature;
-
           await sendWithProgress(uploadUrl, file, {
+            "Content-Type": contentType,
             "x-amz-date": amzDate,
             "x-amz-content-sha256": payloadHash,
             Authorization: authorization,
@@ -1487,10 +1550,7 @@
         function buildPublicUrl(credentials, objectKey) {
           // Constrói a URL pública substituindo a rota S3 pela rota de objeto
           // O endpoint tem a forma .../storage/v1/s3/FAQ
-          const baseEndpoint = credentials.endpoint.replace(
-            /\/storage\/v1\/s3\/FAQ$/,
-            "/storage/v1"
-          );
+          const baseEndpoint = credentials.endpoint.replace(/\/storage\/v1\/s3\/FAQ$/, "/storage/v1");
           return baseEndpoint + "/object/FAQ/" + encodePath(objectKey);
         }
 
@@ -1569,11 +1629,7 @@
          */
         async function listObjects(credentials) {
           try {
-            if (
-              !credentials ||
-              !credentials.accessKeyId ||
-              !credentials.secretAccessKey
-            ) {
+            if (!credentials || !credentials.accessKeyId || !credentials.secretAccessKey) {
               return;
             }
             // Armazena as credenciais atuais para operações posteriores (ex: exclusão/renomeação)
@@ -1710,9 +1766,7 @@
               iconClass = "file-icon--zip";
             } else if (["mp4", "mov"].includes(ext)) {
               iconClass = "file-icon--mp4";
-            } else if (
-              ["jpg", "jpeg", "png", "webp", "heic", "gif"].includes(ext)
-            ) {
+            } else if (["jpg", "jpeg", "png", "webp", "heic", "gif"].includes(ext)) {
               iconClass = "file-icon--jpg";
             }
             const icon = document.createElement("span");
@@ -1722,7 +1776,7 @@
             const name = document.createElement("span");
             name.className = "objects__name";
             name.textContent = key;
-            // Ações (renomear e excluir)
+            // Ações (renomear, excluir e download)
             const actions = document.createElement("div");
             actions.className = "objects__actions";
             const renameBtn = document.createElement("button");
@@ -1735,8 +1789,25 @@
             deleteBtn.textContent = "Excluir";
             deleteBtn.setAttribute("data-action", "delete");
             deleteBtn.setAttribute("data-key", key);
+
+            // Botão de download
+            const downloadBtn = document.createElement("button");
+            downloadBtn.type = "button";
+            downloadBtn.textContent = "Download";
+            downloadBtn.setAttribute("data-action", "download");
+            downloadBtn.setAttribute("data-key", key);
+            // Botão para processar o arquivo via webhook
+            const processBtn = document.createElement("button");
+            processBtn.type = "button";
+            processBtn.textContent = "Processar";
+            processBtn.setAttribute("data-action", "process");
+            processBtn.setAttribute("data-key", key);
+
+
             actions.appendChild(renameBtn);
             actions.appendChild(deleteBtn);
+            actions.appendChild(downloadBtn);
+            actions.appendChild(processBtn);
             // Monta item
             item.appendChild(icon);
             item.appendChild(name);
@@ -1748,7 +1819,23 @@
         /**
          * Envia uma requisição DELETE para remover um objeto do bucket.
          */
-        async function deleteObject(credentials, objectKey) {
+        
+        /**
+         * Gera uma URL pública para um objeto no bucket supabase.
+         * Baseia-se nas credenciais fornecidas.
+         */
+        function generatePublicUrl(credentials, objectKey) {
+          try {
+            const endpointUrl = new URL(credentials.endpoint);
+            const projectSlug = endpointUrl.hostname.split('.')[0];
+            const parts = credentials.endpoint.split('/');
+            const bucketName = parts[parts.length - 1] || '';
+            return `https://${projectSlug}.supabase.co/storage/v1/object/public/${bucketName}/${encodeURIComponent(objectKey)}`;
+          } catch (e) {
+            return objectKey;
+          }
+        }
+async function deleteObject(credentials, objectKey) {
           const endpoint = credentials.endpoint.replace(/\/+$/, "");
           const encodedPath = encodePath(objectKey);
           const url = new URL(endpoint + "/" + encodedPath);
@@ -1818,9 +1905,7 @@
           if (!response.ok) {
             const text = await response.text().catch(() => "");
             throw new Error(
-              `Falha ao excluir (${response.status}): ${
-                text || response.statusText
-              }`
+              `Falha ao excluir (${response.status}): ${text || response.statusText}`
             );
           }
         }
@@ -1850,7 +1935,9 @@
           const dateStamp = amzDate.slice(0, 8);
           // Cabeçalho x-amz-copy-source deve usar o caminho completo do objeto de origem (bucket + chave)
           // Valor do cabeçalho deve incluir o bucket e chave original. Usa encodeURI para preservar '/'
-          const copySource = encodeURI("FAQ/" + sourceKey.replace(/^\/+/, ""));
+          const copySource = encodeURI(
+            "FAQ/" + sourceKey.replace(/^\/+/, "")
+          );
           const canonicalHeaders =
             "host:" +
             url.host +
@@ -1916,11 +2003,101 @@
           if (!response.ok) {
             const text = await response.text().catch(() => "");
             throw new Error(
-              `Falha ao renomear (${response.status}): ${
-                text || response.statusText
-              }`
+              `Falha ao renomear (${response.status}): ${text || response.statusText}`
             );
           }
+        }
+
+        /**
+         * Baixa um objeto do bucket gerando uma requisição assinada e disparando
+         * o download no navegador. O arquivo será salvo com o nome original.
+         */
+        async function downloadObject(credentials, objectKey) {
+          if (!credentials || !objectKey) {
+            throw new Error("Credenciais ou nome do objeto ausentes.");
+          }
+          const endpoint = credentials.endpoint.replace(/\/+$/, "");
+          const encodedPath = encodePath(objectKey);
+          const url = new URL(endpoint + "/" + encodedPath);
+          const canonicalUri = url.pathname;
+          const canonicalQueryString = "";
+          const payloadHash = "UNSIGNED-PAYLOAD";
+          const now = new Date();
+          const amzDate = formatAmzDate(now);
+          const dateStamp = amzDate.slice(0, 8);
+          const canonicalHeaders =
+            "host:" + url.host + "\n" +
+            "x-amz-content-sha256:" + payloadHash + "\n" +
+            "x-amz-date:" + amzDate + "\n";
+          const signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+          const canonicalRequest =
+            "GET\n" +
+            canonicalUri +
+            "\n" +
+            canonicalQueryString +
+            "\n" +
+            canonicalHeaders +
+            "\n" +
+            signedHeaders +
+            "\n" +
+            payloadHash;
+          const stringToSign =
+            "AWS4-HMAC-SHA256\n" +
+            amzDate +
+            "\n" +
+            dateStamp +
+            "/" +
+            credentials.region +
+            "/s3/aws4_request\n" +
+            (await sha256Hex(canonicalRequest));
+          const signingKey = await getSignatureKey(
+            credentials.secretAccessKey,
+            dateStamp,
+            credentials.region,
+            "s3"
+          );
+          const signature = bufferToHex(await hmac(signingKey, stringToSign));
+          const authorization =
+            "AWS4-HMAC-SHA256 Credential=" +
+            credentials.accessKeyId +
+            "/" +
+            dateStamp +
+            "/" +
+            credentials.region +
+            "/s3/aws4_request, SignedHeaders=" +
+            signedHeaders +
+            ", Signature=" +
+            signature;
+          const response = await fetch(url.toString(), {
+            method: "GET",
+            headers: {
+              "x-amz-date": amzDate,
+              "x-amz-content-sha256": payloadHash,
+              Authorization: authorization,
+            },
+          });
+          if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(
+              `Falha ao baixar (${response.status}): ${text || response.statusText}`
+            );
+          }
+          // Extrai o blob para gerar o download
+          const blob = await response.blob();
+          // Cria um link temporário e dispara o download
+          const fileName = objectKey.split("/").pop() || "arquivo";
+          const tempUrl = URL.createObjectURL(blob);
+          const anchor = document.createElement("a");
+          anchor.href = tempUrl;
+          anchor.download = fileName;
+          // Necessário anexar ao DOM para que o click funcione no Firefox
+          document.body.appendChild(anchor);
+          anchor.click();
+          // Limpa o DOM e revoga o URL
+          document.body.removeChild(anchor);
+          setTimeout(() => {
+            URL.revokeObjectURL(tempUrl);
+          }, 1000);
         }
 
         // Carrega lista de objetos quando o usuário preencher as chaves de acesso
@@ -1942,7 +2119,33 @@
         }
         accessKeyInput.addEventListener("blur", maybeListObjects);
         secretKeyInput.addEventListener("blur", maybeListObjects);
-      })();
+      
+        // Process action handler
+        objectsList.addEventListener("click", async (event) => {
+          const processBtn = event.target.closest('button[data-action="process"]');
+          if (!processBtn) return;
+          const key = processBtn.getAttribute("data-key");
+          if (!key || !currentCredentials) return;
+          try {
+            const { url: webhookUrl, token: webhookToken } = readWebhookConfig();
+            setStatus(`Processando ${key}...`, "info");
+            const fileUrl = generatePublicUrl(currentCredentials, key);
+            const headers = { "Content-Type": "application/json" };
+            if (webhookToken) {
+              headers["Authorization"] = `Bearer ${webhookToken}`;
+            }
+            await fetch(webhookUrl, {
+              method: "POST",
+              headers,
+              body: JSON.stringify({ url: fileUrl }),
+            });
+            setStatus(`Arquivo enviado para processamento: ${key}`, "success");
+          } catch (err) {
+            setStatus(err.message || "Erro ao processar arquivo.", "error");
+          }
+        });
+
+})();
     </script>
   </body>
 </html>
